@@ -2207,3 +2207,112 @@ html.skin-village .village-bg { display: block; }
   .v-raincloud, .v-rain, .v-treea, .v-treer, .v-pine.p3,
   .v-char.c-lanlan, .v-char.c-pidan { display: none; }
 }
+
+/* ---- Phím cảm ứng ảo cho Mobile / Tablet ---- */
+.mobile-controls {
+  display: none;
+}
+
+@media (max-width: 1024px), (hover: none) and (pointer: coarse) {
+  .mobile-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    z-index: 100;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  .m-dpad, .m-actions {
+    pointer-events: auto;
+  }
+
+  .m-dpad {
+    position: relative;
+    width: 150px;
+    height: 150px;
+  }
+
+  .m-dpad .m-btn {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 2px solid rgba(56, 189, 248, 0.6);
+    border-radius: 12px;
+    color: #38bdf8;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    touch-action: manipulation;
+  }
+
+  .m-dpad .m-btn:active, .m-dpad .m-btn.active {
+    background: rgba(56, 189, 248, 0.9);
+    color: #fff;
+    transform: scale(0.92);
+  }
+
+  .m-dpad .m-up { top: 0; left: 51px; }
+  .m-dpad .m-down { bottom: 0; left: 51px; }
+  .m-dpad .m-left { top: 51px; left: 0; }
+  .m-dpad .m-right { top: 51px; right: 0; }
+
+  .m-actions {
+    display: flex;
+    gap: 14px;
+    align-items: flex-end;
+  }
+
+  .m-actions .m-btn {
+    border-radius: 50%;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+    touch-action: manipulation;
+  }
+
+  .m-actions .m-item {
+    width: 62px;
+    height: 62px;
+    background: rgba(147, 51, 234, 0.85);
+    border: 2px solid rgba(192, 132, 252, 0.7);
+    color: #fff;
+    font-size: 11px;
+  }
+
+  .m-actions .m-bomb {
+    width: 78px;
+    height: 78px;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    border: 3px solid #fde047;
+    color: #fff;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+
+  .m-actions .m-btn:active, .m-actions .m-btn.active {
+    transform: scale(0.9);
+    filter: brightness(1.2);
+  }
+
+  #view-game .game-main {
+    flex-direction: column;
+    align-items: center;
+  }
+  #side-panel {
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 120px;
+  }
+}

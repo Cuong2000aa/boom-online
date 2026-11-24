@@ -3,11 +3,11 @@
 
 export const CHARACTERS = [
   {
-    id: 'baobao', name: '宝宝', desc: '速度型',
+    id: 'baobao', name: 'Khò Khò', desc: 'Thiên hướng Tốc độ',
     speed: 144, range: 1, bombs: 1,
   },
   {
-    id: 'haidao', name: '小海盗', desc: '爆破型',
+    id: 'haidao', name: 'Hải Tặc', desc: 'Thiên hướng Uy lực',
     speed: 120, range: 2, bombs: 1,
   },
 ];

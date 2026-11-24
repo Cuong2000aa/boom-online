@@ -166,10 +166,10 @@ export function drawItemIcon(ctx, kind, cx, cy, now) {
 
 // 仿盛大版小物件造型兜底（水球/药瓶/鞋子/针/遥控器），坐骑用圆形徽章
 const MOUNT_BADGE = {
-  turtle: ['龟', '#16a34a'],
-  owl: ['鹰', '#b45309'],
-  pirateTurtle: ['龟', '#dc2626'],
-  ufo: ['碟', '#475569'],
+  turtle: ['Rùa', '#16a34a'],
+  owl: ['Cú', '#b45309'],
+  pirateTurtle: ['Rùa', '#dc2626'],
+  ufo: ['Đĩa', '#475569'],
 };
 
 function drawItemIconCanvas(ctx, kind, cx, cy, now) {
@@ -886,9 +886,9 @@ export class Renderer {
         ctx.textBaseline = 'bottom';
         ctx.lineWidth = 3;
         ctx.strokeStyle = 'rgba(12, 74, 110, 0.8)';
-        ctx.strokeText('按 Ctrl 自救', 0, 0);
+        ctx.strokeText('Nhấn Ctrl tự cứu', 0, 0);
         ctx.fillStyle = '#fef08a';
-        ctx.fillText('按 Ctrl 自救', 0, 0);
+        ctx.fillText('Nhấn Ctrl tự cứu', 0, 0);
         ctx.restore();
       }
     }

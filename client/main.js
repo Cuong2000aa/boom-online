@@ -143,7 +143,7 @@ function connect() {
   ws = new WebSocket(proto + location.host);
   ws.onmessage = (e) => route(JSON.parse(e.data));
   ws.onclose = () => {
-    toast('与服务器断开连接，即将刷新…');
+    toast('Mất kết nối với máy chủ, đang tải lại trang…');
     setTimeout(() => location.reload(), 2000);
   };
 }
@@ -209,9 +209,17 @@ function route(msg) {
     case 'chat':
       addChat(msg);
       break;
-    case 'error':
-      toast(msg.msg);
+    case 'error': {
+      const errMap = {
+        '房间不存在': 'Phòng không tồn tại!',
+        '该房间正在对战中': 'Phòng này đang trong trận đấu!',
+        '房间已满': 'Phòng đã đủ người chơi!',
+        '只有房主可以开始游戏': 'Chỉ chủ phòng mới có thể bắt đầu trận đấu!',
+        '所有玩家准备后才能开始': 'Tất cả người chơi cần sẵn sàng mới có thể bắt đầu!',
+      };
+      toast(errMap[msg.msg] || msg.msg);
       break;
+    }
     default:
       break;
   }
@@ -302,39 +310,39 @@ function sfxState(msg) {
 function showResults(msg) {
   const isDraw = msg.winnerId == null;
   const isWin = msg.winnerId === myId;
-  // 胜负大图（胜利！！/平局！！/失败！！ 像素风，居中显示）
+  // Hình thông báo thắng/hòa/thua
   const fx = $('overlay-effect');
   fx.innerHTML = '';
   const img = document.createElement('img');
   img.className = 'fx-img';
   img.src = `${isDraw ? '/assets/pic/Draw.png' : isWin ? '/assets/pic/Win.png' : '/assets/pic/lose.png'}${ASSET_V}`;
-  img.alt = isDraw ? '平局' : isWin ? '胜利' : '失败';
+  img.alt = isDraw ? 'Hòa' : isWin ? 'Chiến Thắng' : 'Thất Bại';
   fx.appendChild(img);
   const avatarBox = $('overlay-avatar');
   avatarBox.innerHTML = '';
   const stats = $('overlay-stats');
   stats.textContent = '';
   if (isDraw) {
-    $('overlay-text').textContent = '平局！';
+    $('overlay-text').textContent = 'Hòa trận!';
   } else {
-    $('overlay-text').textContent = isWin ? '你赢了！' : `「${msg.winnerName}」获胜`;
+    $('overlay-text').textContent = isWin ? 'Bạn đã chiến thắng! 🎉' : `「${msg.winnerName}」đã chiến thắng!`;
     const winner = lastState?.players.find((p) => p.id === msg.winnerId);
     if (winner) avatarBox.appendChild(portraitCanvas(winner.char, 96, winner.colorIndex));
   }
   if (lastState) {
     const alive = lastState.players.filter((p) => p.alive).length;
-    const used = Math.max(0, 180 - (lastState.timeLeft ?? 180)); // 回合时长 180s（server ROUND_TICKS）
+    const used = Math.max(0, 180 - (lastState.timeLeft ?? 180));
     const clock = `${Math.floor(used / 60)}:${String(used % 60).padStart(2, '0')}`;
-    stats.textContent = `对局用时 ${clock} · 存活 ${alive}/${lastState.players.length}`;
+    stats.textContent = `Thời gian trận đấu: ${clock} · Sống sót: ${alive}/${lastState.players.length}`;
   }
-  spawnConfetti(isWin); // 只有胜利才撒彩带
+  spawnConfetti(isWin); // Chỉ thắng mới bắn pháo hoa
   $('overlay').classList.remove('hidden');
-  // 结算画面停留 3 秒后自动退出回房间（也可点按钮提前返回）
+  // Dừng lại 3s rồi tự động quay về phòng
   clearTimeout(resultsTimer);
   resultsTimer = setTimeout(exitResults, 3000);
 }
 
-// 退出结算画面：回房间等待下一局
+// Thoát bảng kết quả: Quay về phòng chờ trận tiếp theo
 function exitResults() {
   clearTimeout(resultsTimer);
   resultsTimer = 0;
@@ -349,7 +357,7 @@ let resultsTimer = 0;
 function spawnConfetti(celebrate) {
   const box = $('overlay-confetti');
   box.innerHTML = '';
-  if (!celebrate) return; // 平局不撒彩带
+  if (!celebrate) return;
   const colors = ['#f59e0b', '#38bdf8', '#22c55e', '#ef4444', '#a78bfa', '#facc15'];
   for (let i = 0; i < 40; i++) {
     const s = document.createElement('span');
@@ -364,7 +372,7 @@ function spawnConfetti(celebrate) {
 function renderRoomList(rooms) {
   lobbyRooms = rooms;
   const pages = Math.max(1, Math.ceil(rooms.length / ROOMS_PER_PAGE));
-  lobbyPage = Math.min(lobbyPage, pages - 1); // 房间减少时回退页码
+  lobbyPage = Math.min(lobbyPage, pages - 1);
   const slice = rooms.slice(lobbyPage * ROOMS_PER_PAGE, (lobbyPage + 1) * ROOMS_PER_PAGE);
 
   const ul = $('room-list');
@@ -373,12 +381,12 @@ function renderRoomList(rooms) {
     const closed = r.inGame || r.players >= r.max;
     const li = document.createElement('li');
     li.className = `ldb-room${closed ? ' closed' : ''}`;
-    li.title = closed ? (r.inGame ? '该房间正在对战中' : '房间已满') : '点击加入房间';
+    li.title = closed ? (r.inGame ? 'Phòng này đang trong trận đấu' : 'Phòng đã đủ người') : 'Nhấp để vào phòng';
 
     const thumb = document.createElement('div');
     thumb.className = 'ldb-room-thumb';
     const cv = document.createElement('canvas');
-    cv.width = 240; // 内部按 2 倍精度绘制，CSS 缩到 108×94
+    cv.width = 240;
     cv.height = 208;
     thumb.appendChild(cv);
     drawMapThumb(cv);
@@ -390,12 +398,12 @@ function renderRoomList(rooms) {
     name.textContent = r.name;
     const mapTag = document.createElement('div');
     mapTag.className = 'ldb-room-map';
-    mapTag.textContent = '地图：海盗14';
+    mapTag.textContent = 'Bản đồ: Cướp Biển 14';
     const meta = document.createElement('div');
     meta.className = 'ldb-room-meta';
     const status = document.createElement('span');
     status.className = `ldb-room-status ${r.inGame ? 'playing' : 'waiting'}`;
-    status.textContent = r.inGame ? '对战中' : '可加入';
+    status.textContent = r.inGame ? 'Đang đấu' : 'Có thể vào';
     const count = document.createElement('span');
     count.className = 'ldb-room-count';
     count.textContent = `${r.players}/${r.max}`;
@@ -406,10 +414,10 @@ function renderRoomList(rooms) {
     if (!closed) li.onclick = () => send({ t: 'joinRoom', roomId: r.id });
     ul.appendChild(li);
   }
-  for (let i = slice.length; i < ROOMS_PER_PAGE; i++) { // 经典大厅的空房间槽位
+  for (let i = slice.length; i < ROOMS_PER_PAGE; i++) {
     const li = document.createElement('li');
     li.className = 'ldb-room empty';
-    li.textContent = '暂无房间';
+    li.textContent = 'Trống (Chưa có phòng)';
     ul.appendChild(li);
   }
 
@@ -418,17 +426,17 @@ function renderRoomList(rooms) {
   $('btn-page-next').disabled = lobbyPage >= pages - 1;
 }
 
-// 快速加入：进第一个可加入的房间
+// Vào nhanh: Vào phòng đầu tiên còn chỗ trống
 function quickJoin() {
   const target = lobbyRooms.find((r) => !r.inGame && r.players < r.max);
   if (target) send({ t: 'joinRoom', roomId: target.id });
-  else toast('当前没有可加入的房间，点击「开设房间」开一局吧');
+  else toast('Hiện chưa có phòng nào trống, hãy nhấn「Tạo Phòng」để mở ván mới nhé!');
 }
 
-// 练习模式：自己建房后立刻开局（真人不足 6 人服务端自动补 Bot）
+// Chế độ Luyện tập: Tự tạo phòng và bắt đầu ngay (tự bù Máy Bot cho đủ 6 người)
 function practice() {
   send({ t: 'createRoom' });
-  send({ t: 'start' }); // 消息按序处理：建房成功后房主直接开赛
+  send({ t: 'start' });
 }
 
 // ---- 房间页（仿盛大经典房间：左槽位+聊天，右角色/颜色/地图/开始按钮） ----
@@ -436,7 +444,7 @@ function practice() {
 // 盛大经典名册 8 名：仅 宝宝/小海盗 有原版立绘、开放可选，其余置灰锁定（灰剪影代码绘制）
 const CHAR_ROSTER = ['xiaoguai', 'baobao', 'pangniu', 'lanmei', 'pidan', 'yangcong', 'haidao', 'emo'];
 const ROSTER_NAMES = {
-  xiaoguai: '小乖', pangniu: '胖妞', lanmei: '蓝妹妹', pidan: '皮蛋', yangcong: '洋葱头', emo: '小恶魔',
+  xiaoguai: 'Bé Bỏng', pangniu: 'Nhanh Nhảu', lanmei: 'Lam Muội', pidan: 'Khè Khè', yangcong: 'Mắt Xanh', emo: 'Tiểu Ác Ma',
 };
 const isCharOpen = (id) => CHARACTERS.some((c) => c.id === id);
 const charDisplayName = (id) => CHARACTERS.find((c) => c.id === id)?.name ?? ROSTER_NAMES[id];
@@ -468,21 +476,21 @@ function renderRoom(room) {
     prevPlayers = new Map();
     entranceUntil.clear();
     $('chat-log').innerHTML = '';
-    chatSys(`欢迎来到「${room.name}」`);
+    chatSys(`Chào mừng bạn đến với「${room.name}」`);
     for (const p of room.players) if (!p.isBot) queueEntrance(p.id); // 进场动效：满房成员齐亮相
   }
   $('room-title').textContent = room.name;
   $('room-count').textContent = `${room.players.length}/${MAX_SLOTS}`;
-  // 真人进出房的系统提示（开局时补进的 Bot 刷掉，不提示）
+  // Thông báo người chơi vào/ra phòng
   const humans = new Map(room.players.filter((p) => !p.isBot).map((p) => [p.id, p.name]));
   if (prevPlayers.size) {
     for (const [id, name] of humans) {
       if (!prevPlayers.has(id)) {
-        chatSys(`${name} 进入了房间`);
+        chatSys(`${name} đã vào phòng`);
         queueEntrance(id);
       }
     }
-    for (const [id, name] of prevPlayers) if (!humans.has(id)) chatSys(`${name} 离开了房间`);
+    for (const [id, name] of prevPlayers) if (!humans.has(id)) chatSys(`${name} đã rời phòng`);
   }
   prevPlayers = humans;
   renderSlots(room);
@@ -502,8 +510,8 @@ function renderSlots(room) {
     const slot = document.createElement('div');
     if (!p) {
       slot.className = 'slot empty';
-      slot.innerHTML = '<div class="slot-pad"><span class="slot-wait">虚位以待</span></div>'
-        + '<div class="slot-state">等待加入</div>';
+      slot.innerHTML = '<div class="slot-pad"><span class="slot-wait">Vị trí trống</span></div>'
+        + '<div class="slot-state">Chờ người chơi</div>';
     } else {
       const isHost = p.id === room.hostId;
       slot.className = `slot${p.id === myId ? ' me' : ''}`;
@@ -513,11 +521,11 @@ function renderSlots(room) {
       pad.appendChild(avatarCanvas(p.char, 80, p.colorIndex));
       const name = document.createElement('div');
       name.className = 'slot-name';
-      name.textContent = p.name + (p.id === myId ? '（我）' : '');
+      name.textContent = p.name + (p.id === myId ? ' (Tôi)' : '');
       const state = document.createElement('div');
       const kind = isHost ? 'host' : p.isBot ? 'bot' : p.ready ? 'ready' : 'idle';
       state.className = `slot-state ${kind}`;
-      state.textContent = isHost ? '房主' : p.isBot ? 'BOT' : p.ready ? '已准备' : '未准备';
+      state.textContent = isHost ? 'Chủ phòng' : p.isBot ? 'MÁY' : p.ready ? 'Đã sẵn sàng' : 'Chưa sẵn sàng';
       slot.append(pad, name, state);
       const fx = entranceFxNode(p.id);
       if (fx) slot.appendChild(fx);
@@ -536,11 +544,10 @@ function buildCharGrid(room) {
       const card = document.createElement('div');
       card.className = `char-card${open ? '' : ' locked'}`;
       card.dataset.char = id;
-      card.title = open ? `选择「${charDisplayName(id)}」` : `「${charDisplayName(id)}」暂未开放`;
+      card.title = open ? `Chọn「${charDisplayName(id)}」` : `「${charDisplayName(id)}」chưa mở`;
       if (open) card.onclick = () => send({ t: 'selectChar', char: id });
       const pad = document.createElement('div');
       pad.className = 'char-pad';
-      // 开放角色：官方立绘（房间/选人阶段统一红色、不换色；队伍配色进对局才生效）；锁定角色：灰色剪影
       pad.appendChild(open ? portraitCanvas(id, 52, 0) : silhouetteCanvas(52));
       const name = document.createElement('div');
       name.className = 'char-name';
@@ -565,11 +572,11 @@ function renderMyChar(room) {
   box.style.setProperty('--tc', teamColor(me.colorIndex));
   box.appendChild(portraitCanvas(me.char, 96, me.colorIndex));
   $('mychar-name').textContent = ch.name;
-  $('mychar-desc').textContent = `${ch.desc} · 初始能力`;
+  $('mychar-desc').textContent = `${ch.desc} · Chỉ số cơ bản`;
   const stats = [
-    ['速度', ch.speed / 48],
-    ['威力', ch.range],
-    ['水泡', ch.bombs],
+    ['Tốc độ', ch.speed / 48],
+    ['Uy lực', ch.range],
+    ['Số bóng', ch.bombs],
   ];
   $('mychar-stats').innerHTML = stats.map(([k, v]) => `
     <div class="mstat"><span>${k}</span><span class="mbar"><i style="width:${Math.min(v / 5, 1) * 100}%"></i></span></div>`).join('');
@@ -585,7 +592,7 @@ function renderColors(room) {
     const chip = document.createElement('span');
     chip.className = `cchip${i === mine ? ' mine' : ''}`;
     chip.style.setProperty('--c', teamColor(i));
-    chip.title = i === mine ? '我的队伍颜色' : '';
+    chip.title = i === mine ? 'Màu đội của tôi' : '';
     if (i === mine) chip.textContent = '✓';
     row.appendChild(chip);
   }
@@ -612,7 +619,7 @@ function addChat({ id, name, text, colorIndex }) {
   const who = document.createElement('span');
   who.className = 'chat-name';
   who.style.color = teamColor(colorIndex);
-  who.textContent = name + (id === myId ? '（我）' : '');
+  who.textContent = name + (id === myId ? ' (Tôi)' : '');
   const body = document.createElement('span');
   body.textContent = text;
   line.append(who, body);
@@ -638,21 +645,21 @@ function renderActions(room) {
     const allReady = others.every((p) => p.ready);
     $('btn-start').disabled = !allReady;
     hint.textContent = allReady
-      ? '点击开始 · 真人不足 6 人自动补 Bot'
-      : '等待所有玩家准备后开始';
+      ? 'Bấm Bắt đầu · Tự động thêm Máy (Bot) nếu thiếu người'
+      : 'Đang đợi tất cả người chơi sẵn sàng...';
   } else {
     const me = room.players.find((p) => p.id === myId);
     const btn = $('btn-ready');
-    btn.textContent = me?.ready ? '取消准备' : '准 备';
+    btn.textContent = me?.ready ? 'HỦY SẴN SÀNG' : 'SẴN SÀNG';
     btn.classList.toggle('green', !me?.ready);
     btn.classList.toggle('blue', !!me?.ready);
-    hint.textContent = me?.ready ? '已准备，等待房主开始' : '点击准备，等待房主开始';
+    hint.textContent = me?.ready ? 'Đã sẵn sàng, chờ chủ phòng bắt đầu' : 'Bấm sẵn sàng để chủ phòng bắt đầu trận';
   }
 }
 
-const MOUNT_NAMES = { turtle: '绿乌龟', owl: '猫头鹰', pirateTurtle: '海盗龟', ufo: '飞碟' };
+const MOUNT_NAMES = { turtle: 'Rùa Xanh', owl: 'Cú Mèo', pirateTurtle: 'Rùa Siêu Tốc', ufo: 'Đĩa Bay UFO' };
 
-// ---- 右侧对战玩家面板 ----
+// ---- Bảng danh sách người chơi bên phải ----
 
 function renderPlayerList(state) {
   const box = $('player-list');
@@ -663,14 +670,14 @@ function renderPlayerList(state) {
     row.style.setProperty('--tc', teamColor(p.colorIndex));
     row.appendChild(avatarCanvas(p.char, 36, p.colorIndex));
     const info = document.createElement('div');
-    const status = !p.alive ? '阵亡' : (p.trapped ? '被困' : '存活');
+    const status = !p.alive ? 'Tử trận' : (p.trapped ? 'Bị sặc nước' : 'Còn sống');
     const extras = [];
     if (p.mount) extras.push(MOUNT_NAMES[p.mount] ?? p.mount);
-    if (p.kick) extras.push('踢');
-    if (p.inv.needle > 0) extras.push(`针×${p.inv.needle}`);
-    if (p.inv.remote > 0) extras.push(`遥控×${p.inv.remote}`);
-    info.innerHTML = `<div class="player-name" style="color:${teamColor(p.colorIndex)}">${escapeHtml(p.name)}${p.id === myId ? '（我）' : ''}`
-      + `${p.isBot ? ' <span class="badge bot">Bot</span>' : ''}</div>`
+    if (p.kick) extras.push('Đá bóng');
+    if (p.inv.needle > 0) extras.push(`Kim×${p.inv.needle}`);
+    if (p.inv.remote > 0) extras.push(`Điều khiển×${p.inv.remote}`);
+    info.innerHTML = `<div class="player-name" style="color:${teamColor(p.colorIndex)}">${escapeHtml(p.name)}${p.id === myId ? ' (Tôi)' : ''}`
+      + `${p.isBot ? ' <span class="badge bot">Máy</span>' : ''}</div>`
       + `<div class="player-sub">${getChar(p.char).name} · ${status}${extras.length ? ' · ' + extras.join(' ') : ''}</div>`;
     row.appendChild(info);
     box.appendChild(row);
@@ -681,15 +688,15 @@ setInterval(() => {
   if (gameRunning && lastState) renderPlayerList(lastState);
 }, 500);
 
-// 道具图例：开局时构建一次（图标与地图上的绘制同款）
+// Bảng giải thích vật phẩm
 function buildLegend() {
   const box = $('item-legend');
   if (box.dataset.built) return;
   box.dataset.built = '1';
   const ITEMS = [
-    ['bubble', '水泡+1'], ['potion', '威力+1'], ['shoe', '速度+24'],
-    ['gremlin', '威力满'], ['devil', '速度满'],
-    ['kick', '踢水泡'], ['needle', '针·被困自救'], ['remote', '遥控水泡'],
+    ['bubble', 'Bóng nước +1'], ['potion', 'Uy lực +1'], ['shoe', 'Tốc độ +24'],
+    ['gremlin', 'Uy lực tối đa'], ['devil', 'Tốc độ tối đa'],
+    ['kick', 'Đá bóng nước'], ['needle', 'Kim · Tự cứu khi bị bọc'], ['remote', 'Bóng điều khiển'],
   ];
   for (const [kind, label] of ITEMS) {
     const item = document.createElement('div');
@@ -714,16 +721,16 @@ function updateHud(msg) {
   }
   const tl = msg.timeLeft ?? 0;
   const clock = `${Math.floor(tl / 60)}:${String(tl % 60).padStart(2, '0')}`;
-  const inv = ` · 针×${me.inv.needle} 遥控×${me.inv.remote}`
-    + (me.mount ? ` · 坐骑${MOUNT_NAMES[me.mount] ?? me.mount}` : '')
-    + (me.kick ? ' · 踢' : '');
-  // 动态按键提示：有遥控泡在场提示空格引爆，有货提示对应道具键
+  const inv = ` · Kim×${me.inv.needle} Điều khiển×${me.inv.remote}`
+    + (me.mount ? ` · Thú cưỡi: ${MOUNT_NAMES[me.mount] ?? me.mount}` : '')
+    + (me.kick ? ' · Đá bóng' : '');
+  // Gợi ý phím bấm động
   const tips = [];
-  if (msg.bombs.some((b) => b.remote && b.owner === myId)) tips.push('空格引爆');
-  else if (me.inv.remote > 0) tips.push('Ctrl 放遥控泡');
-  if (me.inv.needle > 0) tips.push('被困按 Ctrl 自救');
-  $('hud').textContent = `⏱ ${clock} · ${getChar(me.char).name} · 存活 ${alive}/${msg.players.length}`
-    + ` · 水泡 ${me.maxBombs} · 威力 ${me.range} · 速度 ${me.speed}${inv}`
+  if (msg.bombs.some((b) => b.remote && b.owner === myId)) tips.push('Space kích nổ từ xa');
+  else if (me.inv.remote > 0) tips.push('Ctrl đặt bóng điều khiển');
+  if (me.inv.needle > 0) tips.push('Bị bọc bóng: Nhấn Ctrl tự cứu');
+  $('hud').textContent = `⏱ ${clock} · ${getChar(me.char).name} · Còn sống ${alive}/${msg.players.length}`
+    + ` · Số bóng: ${me.maxBombs} · Uy lực: ${me.range} · Tốc độ: ${me.speed}${inv}`
     + (tips.length ? ` · ${tips.join(' · ')}` : '');
 }
 
@@ -809,5 +816,66 @@ window.addEventListener('blur', () => {
   dirs = [];
   if (gameRunning) sendInput();
 });
+
+// ---- Xử lý điều khiển cảm ứng cho Mobile / Tablet ----
+function setupMobileControls() {
+  const dpadBtns = document.querySelectorAll('.m-dpad .m-btn');
+  dpadBtns.forEach((btn) => {
+    const dir = btn.dataset.dir;
+    const startMove = (e) => {
+      e.preventDefault();
+      if (!gameRunning) return;
+      if (!dirs.includes(dir)) {
+        dirs.push(dir);
+        sendInput();
+      }
+      btn.classList.add('active');
+    };
+    const endMove = (e) => {
+      e.preventDefault();
+      const idx = dirs.indexOf(dir);
+      if (idx >= 0) {
+        dirs.splice(idx, 1);
+        if (gameRunning) sendInput();
+      }
+      btn.classList.remove('active');
+    };
+    btn.addEventListener('touchstart', startMove, { passive: false });
+    btn.addEventListener('touchend', endMove, { passive: false });
+    btn.addEventListener('touchcancel', endMove, { passive: false });
+    btn.addEventListener('mousedown', startMove);
+    btn.addEventListener('mouseup', endMove);
+    btn.addEventListener('mouseleave', endMove);
+  });
+
+  const bombBtn = document.getElementById('btn-touch-bomb');
+  if (bombBtn) {
+    const triggerBomb = (e) => {
+      e.preventDefault();
+      if (!gameRunning) return;
+      send({ t: 'placeBomb' });
+      if (canPlaceBombNow()) sfx('snd/放置泡泡_bomb_set.mp3', 0.45);
+      bombBtn.classList.add('active');
+      setTimeout(() => bombBtn.classList.remove('active'), 120);
+    };
+    bombBtn.addEventListener('touchstart', triggerBomb, { passive: false });
+    bombBtn.addEventListener('mousedown', triggerBomb);
+  }
+
+  const itemBtn = document.getElementById('btn-touch-item');
+  if (itemBtn) {
+    const triggerItem = (e) => {
+      e.preventDefault();
+      if (!gameRunning) return;
+      send({ t: 'useItem' });
+      itemBtn.classList.add('active');
+      setTimeout(() => itemBtn.classList.remove('active'), 120);
+    };
+    itemBtn.addEventListener('touchstart', triggerItem, { passive: false });
+    itemBtn.addEventListener('mousedown', triggerItem);
+  }
+}
+
+setupMobileControls();
 
 connect();

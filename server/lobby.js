@@ -61,7 +61,7 @@ export class Lobby {
 
   onHello(ws, msg) {
     if (this.clients.has(ws)) return;
-    let name = String(msg.name ?? '').trim().slice(0, 12) || '玩家';
+    let name = String(msg.name ?? '').trim().slice(0, 12) || 'Người chơi';
     const taken = new Set([...this.clients.values()].map((c) => c.name));
     if (taken.has(name)) {
       let i = 2;
@@ -112,7 +112,7 @@ export class Lobby {
   onCreateRoom(client) {
     if (client.roomId) this.onLeaveRoom(client);
     const room = {
-      id: `r${this.seq++}`, name: `${client.name} 的房间`, hostId: client.id,
+      id: `r${this.seq++}`, name: `Phòng của ${client.name}`, hostId: client.id,
       players: [{
         id: client.id, name: client.name, ready: false, isBot: false, char: DEFAULT_CHAR,
       }],
@@ -226,7 +226,7 @@ export class Lobby {
     while (room.players.length < MIN_PLAYERS) {
       const ch = CHARACTERS[Math.floor(this.random() * CHARACTERS.length)];
       room.players.push({
-        id: `b${this.seq++}`, name: `${ch.name}(Bot)`, ready: true, isBot: true, char: ch.id,
+        id: `b${this.seq++}`, name: `${ch.name} (Máy)`, ready: true, isBot: true, char: ch.id,
       });
     }
     room.inGame = true;

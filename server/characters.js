@@ -16,12 +16,12 @@
 
 export const CHARACTERS = [
   {
-    id: 'baobao', name: '宝宝', desc: '速度',
+    id: 'baobao', name: 'Khò Khò', desc: 'Tốc độ',
     speed: 144, range: 1, bombs: 1,
     caps: { speed: 240, range: 7, bombs: 6 },
   },
   {
-    id: 'haidao', name: '小海盗', desc: '爆破',
+    id: 'haidao', name: 'Hải Tặc', desc: 'Uy lực',
     speed: 120, range: 2, bombs: 1,
     caps: { speed: 216, range: 7, bombs: 8 },
   },
