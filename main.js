@@ -1,11 +1,11 @@
 // 客户端主逻辑：连接、大厅/房间界面、角色选择、输入采集
 // 协议消息类型与 server/protocol.js 保持一致
 
-import { Renderer, drawItemIcon } from './render.js';
-import { CHARACTERS, getChar, avatarCanvas, portraitCanvas, teamColor } from './characters.js';
-import { applyLobbyTextures, drawMapThumb } from './lobby-art.js';
-import { audio } from './audio.js';
-import { LocalGameSession } from './local-engine.js';
+import { Renderer, drawItemIcon } from './render.js?v=20261124';
+import { CHARACTERS, getChar, avatarCanvas, portraitCanvas, teamColor } from './characters.js?v=20261124';
+import { applyLobbyTextures, drawMapThumb } from './lobby-art.js?v=20261124';
+import { audio } from './audio.js?v=20261124';
+import { LocalGameSession } from './local-engine.js?v=20261124';
 
 applyLobbyTextures(); // 木纹外框贴图（代码绘制）
 

@@ -1,5 +1,5 @@
-import { Game, TILE, TICK_RATE } from './engine/game.js';
-import { BotBrain } from './engine/bot.js';
+import { Game, TILE, TICK_RATE } from './engine/game.js?v=20261124';
+import { BotBrain } from './engine/bot.js?v=20261124';
 
 export class LocalGameSession {
   constructor(playerName, playerChar, onMessage) {
