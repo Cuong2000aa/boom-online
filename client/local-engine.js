@@ -117,17 +117,21 @@ export class LocalGameSession {
   tick() {
     if (!this.game) return;
 
-    // AI của Bot tính toán nước đi
-    for (const [id, brain] of this.brains) {
-      const p = this.game.players.get(id);
-      if (!p || !p.alive) continue;
-      const act = brain.step(this.game);
-      this.game.setInput(id, act.dir);
-      if (act.placeBomb) this.game.placeBomb(id);
-      if (act.useItem) this.game.useItem(id);
-    }
+    try {
+      // AI của Bot tính toán nước đi
+      for (const [botId, brain] of this.brains) {
+        const p = this.game.players.get(botId);
+        if (!p || !p.alive) continue;
+        const act = brain.decide(this.game);
+        this.game.setInput(botId, act.dirs);
+        if (act.place) this.game.placeBomb(botId);
+        if (act.use) this.game.useItem(botId);
+      }
 
-    this.game.tick();
+      this.game.tick();
+    } catch (e) {
+      console.error('Local tick error', e);
+    }
 
     const snapshot = this.game.snapshot();
     this.onMessage({

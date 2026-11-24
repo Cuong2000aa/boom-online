@@ -206,6 +206,7 @@ function route(msg) {
       break;
     case 'gameStart':
       gameRunning = true;
+      if (msg.yourId) myId = msg.yourId;
       lastState = null;
       lastStatePrev = null;
       lastCd = null;
