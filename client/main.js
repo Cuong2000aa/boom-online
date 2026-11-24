@@ -5,6 +5,7 @@ import { Renderer, drawItemIcon } from './render.js';
 import { CHARACTERS, getChar, avatarCanvas, portraitCanvas, teamColor } from './characters.js';
 import { applyLobbyTextures, drawMapThumb } from './lobby-art.js';
 import { audio } from './audio.js';
+import { LocalGameSession } from './local-engine.js';
 
 applyLobbyTextures(); // 木纹外框贴图（代码绘制）
 
@@ -32,6 +33,11 @@ let charGridBuilt = false;
 let lobbyRooms = []; // 最近一次大厅房间快照（快速加入用）
 let lobbyPage = 0;
 const ROOMS_PER_PAGE = 6; // 经典大厅：2 列 × 3 行
+
+let localSession = null;
+let myName = 'Khò Khò';
+let myChar = 'baobao';
+let isLocalMode = false;
 
 const KEYMAP = {
   ArrowUp: 'up', KeyW: 'up',
@@ -122,7 +128,35 @@ function show(name) {
 }
 
 function send(obj) {
+  if (isLocalMode) {
+    if (obj.t === 'input') localSession?.setInput(obj.dir);
+    else if (obj.t === 'placeBomb') localSession?.placeBomb();
+    else if (obj.t === 'useItem') localSession?.useItem();
+    else if (obj.t === 'start') localSession?.start();
+    else if (obj.t === 'createRoom' || obj.t === 'joinRoom') localSession?.openRoom();
+    else if (obj.t === 'selectChar') {
+      myChar = obj.char;
+      localSession?.selectChar(obj.char);
+    }
+    else if (obj.t === 'leaveRoom') localSession?.leaveRoom();
+    else if (obj.t === 'chat') localSession?.chat(obj.text);
+    return;
+  }
   if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj));
+}
+
+function enableLocalMode() {
+  if (isLocalMode) return;
+  isLocalMode = true;
+  myId = 'p1';
+  localSession = new LocalGameSession(myName, myChar, route);
+}
+
+function startLocalGame() {
+  enableLocalMode();
+  localSession.playerName = myName;
+  localSession.playerChar = myChar;
+  localSession.start();
 }
 
 // 同步移动输入：发给服务器
@@ -139,13 +173,15 @@ function toast(text) {
 }
 
 function connect() {
-  const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
-  ws = new WebSocket(proto + location.host);
-  ws.onmessage = (e) => route(JSON.parse(e.data));
-  ws.onclose = () => {
-    toast('Mất kết nối với máy chủ, đang tải lại trang…');
-    setTimeout(() => location.reload(), 2000);
-  };
+  try {
+    const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
+    ws = new WebSocket(proto + location.host);
+    ws.onmessage = (e) => route(JSON.parse(e.data));
+    ws.onerror = () => enableLocalMode();
+    ws.onclose = () => enableLocalMode();
+  } catch {
+    enableLocalMode();
+  }
 }
 
 function route(msg) {
@@ -347,7 +383,9 @@ function exitResults() {
   clearTimeout(resultsTimer);
   resultsTimer = 0;
   $('overlay').classList.add('hidden');
-  if (myRoom) {
+  if (isLocalMode) {
+    show('lobby');
+  } else if (myRoom) {
     renderRoom(myRoom);
     show('room');
   }
@@ -428,13 +466,21 @@ function renderRoomList(rooms) {
 
 // Vào nhanh: Vào phòng đầu tiên còn chỗ trống
 function quickJoin() {
+  if (isLocalMode || !ws || ws.readyState !== 1) {
+    startLocalGame();
+    return;
+  }
   const target = lobbyRooms.find((r) => !r.inGame && r.players < r.max);
   if (target) send({ t: 'joinRoom', roomId: target.id });
-  else toast('Hiện chưa có phòng nào trống, hãy nhấn「Tạo Phòng」để mở ván mới nhé!');
+  else toast('Hiện chưa có phòng nào trống, hãy nhấn「Luyện Tập」để mở ván mới nhé!');
 }
 
 // Chế độ Luyện tập: Tự tạo phòng và bắt đầu ngay (tự bù Máy Bot cho đủ 6 người)
 function practice() {
+  if (isLocalMode || !ws || ws.readyState !== 1) {
+    startLocalGame();
+    return;
+  }
   send({ t: 'createRoom' });
   send({ t: 'start' });
 }
@@ -737,14 +783,35 @@ function updateHud(msg) {
 // ---- 按钮事件 ----
 
 function doLogin() {
-  send({ t: 'hello', name: $('name-input').value.trim() });
+  const name = $('name-input').value.trim() || 'Khò Khò';
+  myName = name;
+  if (!ws || ws.readyState !== 1) {
+    enableLocalMode();
+    localSession.playerName = myName;
+    route({ t: 'welcome', id: 'p1', name: myName });
+    route({
+      t: 'lobby',
+      rooms: [
+        { id: 'room-practice', name: 'Phòng Luyện Tập (5 Máy)', players: 1, max: 6, inGame: false }
+      ]
+    });
+    return;
+  }
+  send({ t: 'hello', name });
 }
 
 $('btn-login').onclick = doLogin;
 $('name-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') doLogin();
 });
-$('btn-create').onclick = () => send({ t: 'createRoom' });
+$('btn-create').onclick = () => {
+  if (isLocalMode || !ws || ws.readyState !== 1) {
+    enableLocalMode();
+    localSession.openRoom();
+    return;
+  }
+  send({ t: 'createRoom' });
+};
 $('btn-quick').onclick = quickJoin;
 $('btn-practice').onclick = practice;
 $('btn-help').onclick = () => $('lobby-help').classList.toggle('hidden');
