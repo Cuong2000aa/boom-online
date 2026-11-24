@@ -1,6 +1,6 @@
 // Canvas 渲染：正版素材贴图地图、水泡、火焰、道具、角色精灵；快照间线性插值让移动平滑
 
-import { drawCharacter, charSprite, teamColor } from './characters.js?v=20261124';
+import { drawCharacter, charSprite, teamColor } from './characters.js?v=20261124_v3';
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const RENDER_SCALE = 2; // 画布放大倍率（逻辑坐标不变，高倍率保证全屏清晰）

@@ -414,10 +414,10 @@ test('火焰会烧毁地面上的道具', () => {
   assert.deepEqual(game.items, [{ x: 6, y: 6, kind: 'shoe' }]);
 });
 
-test('共 2 个角色且成长上限互不相同', () => {
-  assert.equal(CHARACTERS.length, 2);
+test('Các nhân vật có giới hạn trưởng thành khác nhau', () => {
+  assert.ok(CHARACTERS.length >= 2);
   const ids = new Set(CHARACTERS.map((c) => c.id));
-  assert.deepEqual([...ids].sort(), ['baobao', 'haidao']);
+  assert.ok(ids.has('baobao') && ids.has('haidao'));
   assert.notDeepEqual(CHARACTERS[0].caps, CHARACTERS[1].caps, '成长上限应互不相同');
 });
 

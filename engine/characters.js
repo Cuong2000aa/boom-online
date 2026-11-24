@@ -1,29 +1,44 @@
-// 角色设定：盛大泡泡堂原版角色（拥有 4 向行走序列帧的两名基本角色）
-// 客户端 client/characters.js 保存同一份数据的展示副本
-//
-// 官方口径存档（百度百科角色词条"初始值/上限值"体系；盛大官网只公布性格描述、无数值表）：
-//   宝宝：初始 泡1/威1/速5 → 极限 泡6/威7/速10（"唯一速度满值"口径）
-//   小海盗（官方名"海盗船长" Lodumani，原版隐藏角色）：初始 泡3/威3/速6 → 极限 泡9/威7/速9
-// 原口径下小海盗早/后期全方位压制宝宝（原版它是随机摇出的隐藏角色，不讲究平衡），
-// 现调整为双人对决平衡版（官方为锚，早期对收、后期留分工）：
-//   宝宝（速度型）：初始 泡1/威1/速6 → 极限 泡6/威7/速10
-//   小海盗（爆破型）：初始 泡1/威2/速5 → 极限 泡8/威7/速9
-//   早期威力/水泡：海盗威 2 换宝宝速 1 级——泡数持平（各 1），因为早期泡+1 ≈ 开箱
-//   效率翻倍（可并发双泡加速道具获取、滚雪球），是三项早期增益里最强一档，只给
-//   海盗留威力上较小且不同质的优势（爆炸十字碰箱即止，威 2 主要利于隔箱安全放泡）
-//   后期宝宝极速快 1 级（10>9）、小海盗多 2 泡（8>6），威力同 7
-// 游戏内换算：速度 1 级 = 24 px/s（与鞋子 +24 一致）；威力=格数、水泡=个数
-
+// Cấu hình nhân vật Boom Online
 export const CHARACTERS = [
   {
-    id: 'baobao', name: 'Khò Khò', desc: 'Tốc độ',
+    id: 'baobao', name: 'Khò Khò', desc: 'Thiên hướng Tốc độ',
     speed: 144, range: 1, bombs: 1,
     caps: { speed: 240, range: 7, bombs: 6 },
+    hasTeamVariants: true,
   },
   {
-    id: 'haidao', name: 'Hải Tặc', desc: 'Uy lực',
+    id: 'haidao', name: 'Hải Tặc', desc: 'Thiên hướng Uy lực',
     speed: 120, range: 2, bombs: 1,
     caps: { speed: 216, range: 7, bombs: 8 },
+    hasTeamVariants: true,
+  },
+  {
+    id: 'pidan', name: 'Khè Khè', desc: 'Cân bằng · Dễ chơi',
+    speed: 130, range: 1, bombs: 2,
+    caps: { speed: 226, range: 7, bombs: 7 },
+    hasTeamVariants: false,
+    sprite: 'pidan',
+  },
+  {
+    id: 'congtou', name: 'Mắt Xanh', desc: 'Trí tuệ · Ôm bom',
+    speed: 120, range: 1, bombs: 2,
+    caps: { speed: 216, range: 6, bombs: 8 },
+    hasTeamVariants: false,
+    sprite: 'congtou',
+  },
+  {
+    id: 'lanlan', name: 'Lam Muội', desc: 'Linh hoạt · Khéo léo',
+    speed: 135, range: 1, bombs: 1,
+    caps: { speed: 230, range: 7, bombs: 6 },
+    hasTeamVariants: false,
+    sprite: 'lanlan',
+  },
+  {
+    id: 'pangdun', name: 'Nhanh Nhảu', desc: 'Dũng mãnh · Trâu bò',
+    speed: 115, range: 2, bombs: 2,
+    caps: { speed: 210, range: 8, bombs: 7 },
+    hasTeamVariants: false,
+    sprite: 'pangdun',
   },
 ];
 

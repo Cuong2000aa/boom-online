@@ -1,11 +1,11 @@
 // 客户端主逻辑：连接、大厅/房间界面、角色选择、输入采集
 // 协议消息类型与 server/protocol.js 保持一致
 
-import { Renderer, drawItemIcon } from './render.js?v=20261124';
-import { CHARACTERS, getChar, avatarCanvas, portraitCanvas, teamColor } from './characters.js?v=20261124';
-import { applyLobbyTextures, drawMapThumb } from './lobby-art.js?v=20261124';
-import { audio } from './audio.js?v=20261124';
-import { LocalGameSession } from './local-engine.js?v=20261124';
+import { Renderer, drawItemIcon } from './render.js?v=20261124_v3';
+import { CHARACTERS, getChar, avatarCanvas, portraitCanvas, teamColor } from './characters.js?v=20261124_v3';
+import { applyLobbyTextures, drawMapThumb } from './lobby-art.js?v=20261124_v3';
+import { audio } from './audio.js?v=20261124_v3';
+import { LocalGameSession } from './local-engine.js?v=20261124_v3';
 
 applyLobbyTextures(); // 木纹外框贴图（代码绘制）
 
@@ -488,10 +488,10 @@ function practice() {
 
 // ---- 房间页（仿盛大经典房间：左槽位+聊天，右角色/颜色/地图/开始按钮） ----
 
-// 盛大经典名册 8 名：仅 宝宝/小海盗 有原版立绘、开放可选，其余置灰锁定（灰剪影代码绘制）
-const CHAR_ROSTER = ['xiaoguai', 'baobao', 'pangniu', 'lanmei', 'pidan', 'yangcong', 'haidao', 'emo'];
+// Danh sách 6 nhân vật tuổi thơ đã mở khóa: Khò Khò, Hải Tặc, Khè Khè, Mắt Xanh, Lam Muội, Nhanh Nhảu
+const CHAR_ROSTER = ['baobao', 'haidao', 'pidan', 'congtou', 'lanlan', 'pangdun'];
 const ROSTER_NAMES = {
-  xiaoguai: 'Bé Bỏng', pangniu: 'Nhanh Nhảu', lanmei: 'Lam Muội', pidan: 'Khè Khè', yangcong: 'Mắt Xanh', emo: 'Tiểu Ác Ma',
+  baobao: 'Khò Khò', haidao: 'Hải Tặc', pidan: 'Khè Khè', congtou: 'Mắt Xanh', lanlan: 'Lam Muội', pangdun: 'Nhanh Nhảu',
 };
 const isCharOpen = (id) => CHARACTERS.some((c) => c.id === id);
 const charDisplayName = (id) => CHARACTERS.find((c) => c.id === id)?.name ?? ROSTER_NAMES[id];

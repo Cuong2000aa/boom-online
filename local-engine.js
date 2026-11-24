@@ -1,5 +1,5 @@
-import { Game, TILE, TICK_RATE } from './engine/game.js?v=20261124';
-import { BotBrain } from './engine/bot.js?v=20261124';
+import { Game, TILE, TICK_RATE } from './engine/game.js?v=20261124_v3';
+import { BotBrain } from './engine/bot.js?v=20261124_v3';
 
 export class LocalGameSession {
   constructor(playerName, playerChar, onMessage) {
@@ -15,11 +15,11 @@ export class LocalGameSession {
 
   getBotsConfig() {
     return [
-      { id: 'b1', name: 'Bé Bỏng (Máy)', isBot: true, char: 'haidao', colorIndex: 1, ready: true },
-      { id: 'b2', name: 'Khè Khè (Máy)', isBot: true, char: 'baobao', colorIndex: 2, ready: true },
+      { id: 'b1', name: 'Khè Khè (Máy)', isBot: true, char: 'pidan', colorIndex: 1, ready: true },
+      { id: 'b2', name: 'Mắt Xanh (Máy)', isBot: true, char: 'congtou', colorIndex: 2, ready: true },
       { id: 'b3', name: 'Hải Tặc (Máy)', isBot: true, char: 'haidao', colorIndex: 3, ready: true },
-      { id: 'b4', name: 'Mắt Xanh (Máy)', isBot: true, char: 'baobao', colorIndex: 4, ready: true },
-      { id: 'b5', name: 'Nhanh Nhảu (Máy)', isBot: true, char: 'haidao', colorIndex: 5, ready: true },
+      { id: 'b4', name: 'Lam Muội (Máy)', isBot: true, char: 'lanlan', colorIndex: 4, ready: true },
+      { id: 'b5', name: 'Nhanh Nhảu (Máy)', isBot: true, char: 'pangdun', colorIndex: 5, ready: true },
     ];
   }
 
@@ -35,6 +35,24 @@ export class LocalGameSession {
       ],
     };
     this.onMessage({ t: 'room', room: this.mockRoom });
+    setTimeout(() => {
+      this.onMessage({
+        t: 'chat',
+        id: 'b1',
+        name: 'Khè Khè (Máy)',
+        text: 'Chào đại ca! Sẵn sàng so tài bóng nước chưa nào? 😎',
+        colorIndex: 1,
+      });
+    }, 500);
+    setTimeout(() => {
+      this.onMessage({
+        t: 'chat',
+        id: 'b3',
+        name: 'Hải Tặc (Máy)',
+        text: 'Cẩn thận với uy lực bóng nước của ta đấy nhé! 💣🔥',
+        colorIndex: 3,
+      });
+    }, 1200);
   }
 
   selectChar(char) {
